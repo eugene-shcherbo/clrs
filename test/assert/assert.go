@@ -1,0 +1,15 @@
+package assert
+
+import "testing"
+
+func Equals[T comparable](t *testing.T, a, b T) {
+	if a != b {
+		t.Errorf("Expected is %v, Actual is %v", a, b)
+	}
+}
+
+func True(t *testing.T, value bool) {
+	if !value {
+		t.Error("Value should be true")
+	}
+}
