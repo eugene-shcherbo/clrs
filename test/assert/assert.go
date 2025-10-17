@@ -1,9 +1,18 @@
 package assert
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
 func Equals[T comparable](t *testing.T, a, b T) {
 	if a != b {
+		t.Errorf("Expected is %v, Actual is %v", a, b)
+	}
+}
+
+func SlicesEqual[T comparable](t *testing.T, a, b []T) {
+	if !slices.Equal(a, b) {
 		t.Errorf("Expected is %v, Actual is %v", a, b)
 	}
 }
