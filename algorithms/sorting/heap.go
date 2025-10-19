@@ -6,8 +6,7 @@ import (
 )
 
 func HeapsortInPlace[T any, K cmp.Ordered](items []T, key func(i T) K) []T {
-	comparator := func(a, b T) int { return heap.DefaultComparator(key(a), key(b)) }
-	prop := heap.MaxHeapProp(comparator)
+	prop := heap.MaxHeapProp(func(i T) K { return key(i) })
 
 	heap.BuildHeapInPlace(items, prop)
 

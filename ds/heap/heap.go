@@ -1,33 +1,82 @@
 package heap
 
-import "cmp"
+import (
+	"cmp"
+	"errors"
+)
 
-type Comparator[T any] func(a, b T) int
-
-func DefaultComparator[T cmp.Ordered](a, b T) int {
-	return cmp.Compare(a, b)
+func DefaultKey[T cmp.Ordered](a T) T {
+	return a
 }
 
-type HeapProperty[T any] struct {
+type HeapProperty[T any, K cmp.Ordered] struct {
 	Satisfies func(a, b T) bool
+	keyOf     func(T) K
 }
 
-func MinHeapProp[T any](comp Comparator[T]) *HeapProperty[T] {
-	return &HeapProperty[T]{func(a, b T) bool { return comp(a, b) <= 0 }}
+func MinHeapProp[T any, K cmp.Ordered](keyOf func(T) K) *HeapProperty[T, K] {
+	return &HeapProperty[T, K]{
+		func(a, b T) bool { return keyOf(a) <= keyOf(b) },
+		keyOf,
+	}
 }
 
-func MaxHeapProp[T any](comp Comparator[T]) *HeapProperty[T] {
-	return &HeapProperty[T]{func(a, b T) bool { return comp(a, b) >= 0 }}
+func MaxHeapProp[T any, K cmp.Ordered](keyOf func(T) K) *HeapProperty[T, K] {
+	return &HeapProperty[T, K]{
+		func(a, b T) bool { return keyOf(a) >= keyOf(b) },
+		keyOf,
+	}
 }
 
-func BuildHeapInPlace[T any](items []T, prop *HeapProperty[T]) []T {
+type BinaryHeap[T any, K cmp.Ordered] struct {
+	prop  *HeapProperty[T, K]
+	items []T
+}
+
+func NewHeap[T any, K cmp.Ordered](items []T, prop *HeapProperty[T, K]) *BinaryHeap[T, K] {
+	itemsCopy := make([]T, len(items))
+	copy(itemsCopy, items)
+
+	return &BinaryHeap[T, K]{
+		prop,
+		BuildHeapInPlace(itemsCopy, prop),
+	}
+}
+
+func (heap *BinaryHeap[T, K]) Peek() (T, error) {
+	if len(heap.items) == 0 {
+		var zero T
+		return zero, errors.New("heap underflow")
+	}
+
+	return heap.items[0], nil
+}
+
+func (heap *BinaryHeap[T, K]) Pop() (T, error) {
+	val, err := heap.Peek()
+
+	if err != nil {
+		return val, err
+	}
+
+	n := len(heap.items)
+
+	heap.items[0], heap.items[n-1] = heap.items[n-1], heap.items[0]
+	heap.items = heap.items[:n-1]
+
+	Heapify(heap.items, 0, len(heap.items), heap.prop)
+
+	return val, nil
+}
+
+func BuildHeapInPlace[T any, K cmp.Ordered](items []T, prop *HeapProperty[T, K]) []T {
 	for i := len(items)/2 - 1; i >= 0; i-- {
 		Heapify(items, i, len(items), prop)
 	}
 	return items
 }
 
-func Heapify[T any](items []T, i int, n int, prop *HeapProperty[T]) []T {
+func Heapify[T any, K cmp.Ordered](items []T, i int, n int, prop *HeapProperty[T, K]) []T {
 	for {
 		idx := i
 		left := getLeftIdx(i)
