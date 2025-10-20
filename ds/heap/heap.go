@@ -77,16 +77,16 @@ func (heap *BinaryHeap[T, K]) Add(item T) {
 	heap.items = append(heap.items, item)
 	prop, items := heap.prop, heap.items
 
-	for i := len(items) - 1; i > 0; {
-		parentIdx := getParentIdx(i)
+	i := len(items) - 1
+	j := getParentIdx(i)
 
-		if prop.Satisfies(items[parentIdx], items[i]) {
-			return
-		}
-
-		items[i], items[parentIdx] = items[parentIdx], items[i]
-		i = parentIdx
+	for i > 0 && !prop.Satisfies(items[j], item) {
+		items[i] = items[j]
+		i = j
+		j = getParentIdx(i)
 	}
+
+	items[i] = item
 }
 
 func BuildHeapInPlace[T any, K cmp.Ordered](items []T, prop *HeapProperty[T, K]) []T {
