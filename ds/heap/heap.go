@@ -43,6 +43,10 @@ func NewHeap[T any, K cmp.Ordered](items []T, prop *HeapProperty[T, K]) *BinaryH
 	}
 }
 
+func (heap *BinaryHeap[T, K]) Len() int {
+	return len(heap.items)
+}
+
 func (heap *BinaryHeap[T, K]) Peek() (T, error) {
 	if len(heap.items) == 0 {
 		var zero T
@@ -67,6 +71,22 @@ func (heap *BinaryHeap[T, K]) Pop() (T, error) {
 	Heapify(heap.items, 0, len(heap.items), heap.prop)
 
 	return val, nil
+}
+
+func (heap *BinaryHeap[T, K]) Add(item T) {
+	heap.items = append(heap.items, item)
+	prop, items := heap.prop, heap.items
+
+	for i := len(items) - 1; i > 0; {
+		parentIdx := getParentIdx(i)
+
+		if prop.Satisfies(items[parentIdx], items[i]) {
+			return
+		}
+
+		items[i], items[parentIdx] = items[parentIdx], items[i]
+		i = parentIdx
+	}
 }
 
 func BuildHeapInPlace[T any, K cmp.Ordered](items []T, prop *HeapProperty[T, K]) []T {
@@ -107,4 +127,8 @@ func getLeftIdx(i int) int {
 
 func getRightIdx(i int) int {
 	return 2*i + 2
+}
+
+func getParentIdx(i int) int {
+	return (i - 1) / 2
 }
