@@ -22,3 +22,9 @@ func True(t *testing.T, value bool) {
 		t.Error("Value should be true")
 	}
 }
+
+func False(t *testing.T, value bool) {
+	if value {
+		t.Error("Value should be false")
+	}
+}
