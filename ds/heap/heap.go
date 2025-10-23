@@ -5,49 +5,42 @@ import (
 	"errors"
 )
 
-func DefaultKey[T cmp.Ordered](a T) T {
-	return a
+func DefaultComparer[T cmp.Ordered](a, b T) int {
+	return cmp.Compare(a, b)
 }
 
-type HeapProperty[T any, K cmp.Ordered] struct {
+type HeapProperty[T any] struct {
 	Satisfies func(a, b T) bool
-	keyOf     func(T) K
 }
 
-func MinHeapProp[T any, K cmp.Ordered](keyOf func(T) K) *HeapProperty[T, K] {
-	return &HeapProperty[T, K]{
-		func(a, b T) bool { return keyOf(a) <= keyOf(b) },
-		keyOf,
-	}
+func MinHeapProp[T any](comparer func(a, b T) int) *HeapProperty[T] {
+	return &HeapProperty[T]{func(a, b T) bool { return comparer(a, b) < 0 }}
 }
 
-func MaxHeapProp[T any, K cmp.Ordered](keyOf func(T) K) *HeapProperty[T, K] {
-	return &HeapProperty[T, K]{
-		func(a, b T) bool { return keyOf(a) >= keyOf(b) },
-		keyOf,
-	}
+func MaxHeapProp[T any](comparer func(a, b T) int) *HeapProperty[T] {
+	return &HeapProperty[T]{func(a, b T) bool { return comparer(a, b) > 0 }}
 }
 
-type BinaryHeap[T any, K cmp.Ordered] struct {
-	prop  *HeapProperty[T, K]
+type BinaryHeap[T any] struct {
+	prop  *HeapProperty[T]
 	items []T
 }
 
-func NewHeap[T any, K cmp.Ordered](items []T, prop *HeapProperty[T, K]) *BinaryHeap[T, K] {
+func NewHeap[T any](items []T, prop *HeapProperty[T]) *BinaryHeap[T] {
 	itemsCopy := make([]T, len(items))
 	copy(itemsCopy, items)
 
-	return &BinaryHeap[T, K]{
+	return &BinaryHeap[T]{
 		prop,
 		BuildHeapInPlace(itemsCopy, prop),
 	}
 }
 
-func (heap *BinaryHeap[T, K]) Len() int {
+func (heap *BinaryHeap[T]) Len() int {
 	return len(heap.items)
 }
 
-func (heap *BinaryHeap[T, K]) Peek() (T, error) {
+func (heap *BinaryHeap[T]) Peek() (T, error) {
 	if len(heap.items) == 0 {
 		var zero T
 		return zero, errors.New("heap underflow")
@@ -56,7 +49,7 @@ func (heap *BinaryHeap[T, K]) Peek() (T, error) {
 	return heap.items[0], nil
 }
 
-func (heap *BinaryHeap[T, K]) Pop() (T, error) {
+func (heap *BinaryHeap[T]) Pop() (T, error) {
 	val, err := heap.Peek()
 
 	if err != nil {
@@ -73,7 +66,7 @@ func (heap *BinaryHeap[T, K]) Pop() (T, error) {
 	return val, nil
 }
 
-func (heap *BinaryHeap[T, K]) Add(item T) {
+func (heap *BinaryHeap[T]) Add(item T) {
 	heap.items = append(heap.items, item)
 	prop, items := heap.prop, heap.items
 
@@ -89,14 +82,14 @@ func (heap *BinaryHeap[T, K]) Add(item T) {
 	items[i] = item
 }
 
-func BuildHeapInPlace[T any, K cmp.Ordered](items []T, prop *HeapProperty[T, K]) []T {
+func BuildHeapInPlace[T any](items []T, prop *HeapProperty[T]) []T {
 	for i := len(items)/2 - 1; i >= 0; i-- {
 		Heapify(items, i, len(items), prop)
 	}
 	return items
 }
 
-func Heapify[T any, K cmp.Ordered](items []T, i int, n int, prop *HeapProperty[T, K]) []T {
+func Heapify[T any](items []T, i int, n int, prop *HeapProperty[T]) []T {
 	for {
 		idx := i
 		left := getLeftIdx(i)

@@ -1,6 +1,9 @@
 package ch6
 
-import "clrs/ds/heap"
+import (
+	"clrs/ds/heap"
+	"cmp"
+)
 
 func MergeSortedLists(lists [][]int) []int {
 	type elInfo struct {
@@ -8,7 +11,7 @@ func MergeSortedLists(lists [][]int) []int {
 		listIdx int
 	}
 
-	prop := heap.MinHeapProp(func(e *elInfo) int { return lists[e.listIdx][e.idx] })
+	prop := heap.MinHeapProp(func(a, b *elInfo) int { return cmp.Compare(lists[a.listIdx][a.idx], lists[b.listIdx][b.idx]) })
 	minimums := heap.NewHeap([]*elInfo{}, prop)
 
 	for i := range lists {

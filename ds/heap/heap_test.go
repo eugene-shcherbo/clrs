@@ -7,13 +7,13 @@ import (
 )
 
 func TestReadForEmpty(t *testing.T) {
-	operations := []func(*heap.BinaryHeap[int, int]) (int, error){
-		func(heap *heap.BinaryHeap[int, int]) (int, error) { return heap.Peek() },
-		func(heap *heap.BinaryHeap[int, int]) (int, error) { return heap.Pop() },
+	operations := []func(*heap.BinaryHeap[int]) (int, error){
+		func(heap *heap.BinaryHeap[int]) (int, error) { return heap.Peek() },
+		func(heap *heap.BinaryHeap[int]) (int, error) { return heap.Pop() },
 	}
 
 	for _, op := range operations {
-		val, err := op(heap.NewHeap(nil, heap.MaxHeapProp(heap.DefaultKey[int])))
+		val, err := op(heap.NewHeap(nil, heap.MaxHeapProp(heap.DefaultComparer[int])))
 
 		assert.Equals(t, 0, val)
 		assert.True(t, err != nil)
@@ -22,11 +22,11 @@ func TestReadForEmpty(t *testing.T) {
 
 func TestPeek(t *testing.T) {
 	testCases := []struct {
-		prop *heap.HeapProperty[int, int]
+		prop *heap.HeapProperty[int]
 		want int
 	}{
-		{heap.MinHeapProp(heap.DefaultKey[int]), -3},
-		{heap.MaxHeapProp(heap.DefaultKey[int]), 128},
+		{heap.MinHeapProp(heap.DefaultComparer[int]), -3},
+		{heap.MaxHeapProp(heap.DefaultComparer[int]), 128},
 	}
 
 	for _, c := range testCases {
@@ -41,11 +41,11 @@ func TestPeek(t *testing.T) {
 
 func TestPop(t *testing.T) {
 	testCases := []struct {
-		prop *heap.HeapProperty[int, int]
+		prop *heap.HeapProperty[int]
 		want []int
 	}{
-		{heap.MinHeapProp(heap.DefaultKey[int]), []int{-3, 0, 1, 2, 2, 4, 5, 8}},
-		{heap.MaxHeapProp(heap.DefaultKey[int]), []int{8, 5, 4, 2, 2, 1, 0, -3}},
+		{heap.MinHeapProp(heap.DefaultComparer[int]), []int{-3, 0, 1, 2, 2, 4, 5, 8}},
+		{heap.MaxHeapProp(heap.DefaultComparer[int]), []int{8, 5, 4, 2, 2, 1, 0, -3}},
 	}
 
 	for _, c := range testCases {
@@ -64,11 +64,11 @@ func TestPop(t *testing.T) {
 
 func TestInsert(t *testing.T) {
 	testCases := []struct {
-		prop      *heap.HeapProperty[int, int]
+		prop      *heap.HeapProperty[int]
 		wantPeeks []int
 	}{
-		{heap.MinHeapProp(heap.DefaultKey[int]), []int{4, 4, 1, 1, 0, 0, -3, -3}},
-		{heap.MaxHeapProp(heap.DefaultKey[int]), []int{4, 8, 8, 8, 8, 12, 12, 12}},
+		{heap.MinHeapProp(heap.DefaultComparer[int]), []int{4, 4, 1, 1, 0, 0, -3, -3}},
+		{heap.MaxHeapProp(heap.DefaultComparer[int]), []int{4, 8, 8, 8, 8, 12, 12, 12}},
 	}
 
 	toAdd := []int{4, 8, 1, 2, 0, 12, -3, 5}

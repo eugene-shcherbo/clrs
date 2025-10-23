@@ -2,11 +2,16 @@ package sorting
 
 import (
 	"clrs/ds/heap"
-	"cmp"
 )
 
-func HeapsortInPlace[T any, K cmp.Ordered](items []T, key func(i T) K) []T {
-	prop := heap.MaxHeapProp(func(i T) K { return key(i) })
+func HeapsortInPlace[T any](items []T, less func(a, b T) bool) []T {
+	prop := heap.MaxHeapProp(func(a, b T) int {
+		if less(a, b) {
+			return -1
+		}
+
+		return 1
+	})
 
 	heap.BuildHeapInPlace(items, prop)
 
